@@ -13,7 +13,7 @@
 #define CLAW_HOLD 20
 #define TURN_BACK_POWER (-5)
 #define SEARCH_DISTANCE 30
-#define MIN_OBJ_DIST 11
+#define MIN_OBJ_DIST 15
 
 int max(int a, int b)
 {
@@ -83,8 +83,9 @@ int searchForObject()
 	return ef - ei;
 }
 
-int retrieve()
+long retrieve()
 {
+	long position = nMotorEncoder[left];
 	nxtDisplayCenteredTextLine(2, "RETRIEVAL MODE"); //debug text
 	int speed = 50;
 	while (SensorValue[sonar] > MIN_OBJ_DIST)
@@ -96,7 +97,7 @@ int retrieve()
 	}
 	motor[right] = 0;
 	motor[left] = 0;
-	return 0;
+	return position;
 }
 
 void closeClaw()
@@ -111,6 +112,15 @@ void closeClaw()
 	motor[claw] = CLAW_HOLD;
 }
 
+void backUp(long position)
+{
+	motor[right] = 50;
+	motor[left] = -50;
+	while (nMotorEncoder[left] > position){}
+	motor[right] = 0;
+	motor[left] = 0;
+}
+
 /////////////////////
 //	Task: Main
 /////////////////////
@@ -118,6 +128,7 @@ task main()
 {
 	init();
 	int encoderDistance = searchForObject();
-	retrieve();
+	long distance = retrieve();
 	closeClaw();
+	backUp(distance);
 }
